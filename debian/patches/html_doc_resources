@@ -1,0 +1,21 @@
+Index: postgis/doc/Makefile
+===================================================================
+--- postgis.orig/doc/Makefile	2011-09-15 15:14:47.000000000 +0200
++++ postgis/doc/Makefile	2011-11-21 16:06:03.000000000 +0100
+@@ -134,12 +134,16 @@
+ 	@mkdir -p $(PGSQL_DOCDIR)/postgis
+ 	@mkdir -p $(PGSQL_MANDIR)/man1
+ 	cp html/postgis.html $(PGSQL_DOCDIR)/postgis/postgis.html
++	cp html/style.css $(PGSQL_DOCDIR)/postgis/style.css
++	cp -r html/images $(PGSQL_DOCDIR)/postgis/
+ 	cp ../README.postgis $(PGSQL_DOCDIR)/postgis/README.postgis
+ 	cp man/pgsql2shp.1 $(PGSQL_MANDIR)/man1/pgsql2shp.1
+ 	cp man/shp2pgsql.1 $(PGSQL_MANDIR)/man1/shp2pgsql.1
+ 
+ uninstall:
+ 	rm -f $(PGSQL_DOCDIR)/postgis/postgis.html
++	rm -f $(PGSQL_DOCDIR)/postgis/style.css
++	rm -rf $(PGSQL_DOCDIR)/postgis/images
+ 	rm -f $(PGSQL_DOCDIR)/postgis/README.postgis
+ 	rm -f $(PGSQL_MANDIR)/man1/shp2pgsql.1
+ 	rm -f $(PGSQL_MANDIR)/man1/pgsql2shp.1

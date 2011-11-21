@@ -1,0 +1,15 @@
+Index: postgis/java/jdbc/Makefile
+===================================================================
+--- postgis.orig/java/jdbc/Makefile	2011-03-24 17:12:30.000000000 +0100
++++ postgis/java/jdbc/Makefile	2011-03-24 17:35:23.000000000 +0100
+@@ -251,8 +251,8 @@
+ install: jar installdirs
+ 	@echo Testing for successful inclusion of ../Makefile.config
+ 	test ../Makefile.config
+-	$(INSTALL_DATA) postgis.jar $(DESTDIR)
+-	$(INSTALL_DATA) postgis_debug.jar $(DESTDIR)
++	install -m 644 postgis.jar $(DESTDIR)
++	install -m 644 postgis_debug.jar $(DESTDIR)
+ 
+ installdirs:
+ 	@mkdir -p $(DESTDIR)

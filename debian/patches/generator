@@ -1,0 +1,13 @@
+Index: postgis/doc/html/image_src/generator.c
+===================================================================
+--- postgis.orig/doc/html/image_src/generator.c	2011-03-24 17:12:30.000000000 +0100
++++ postgis/doc/html/image_src/generator.c	2011-03-24 17:36:08.000000000 +0100
+@@ -363,7 +363,7 @@
+ 	while ( fgets ( line, sizeof line, pfile ) != NULL && !isspace(*line) )
+ 	{
+ 
+-		char output[2048];
++		char output[4096];
+ 		char *ptr = output;
+ 		char *styleName;
+ 		int useDefaultStyle;
