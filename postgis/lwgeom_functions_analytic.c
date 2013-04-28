@@ -1,5 +1,5 @@
 /**********************************************************************
- * $Id: lwgeom_functions_analytic.c 7460 2011-06-23 23:11:15Z chodgson $
+ * $Id: lwgeom_functions_analytic.c 9250 2012-02-21 16:51:11Z strk $
  *
  * PostGIS - Spatial Types for PostgreSQL
  * http://postgis.refractions.net
@@ -371,10 +371,8 @@ Datum LWGEOM_line_interpolate_point(PG_FUNCTION_ARGS)
 		else
 			getPoint4d_p(ipa, ipa->npoints-1, &pt);
 
-		opa = pointArray_construct((uchar *)&pt,
-		                           TYPE_HASZ(line->type),
-		                           TYPE_HASM(line->type),
-		                           1);
+		opa = ptarray_construct(TYPE_HASZ(line->type), TYPE_HASM(line->type), 1);
+		setPoint4d(opa, 0, &pt);
 		point = lwpoint_construct(line->SRID, 0, opa);
 		srl = lwpoint_serialize(point);
 		/* We shouldn't need this, the memory context is getting freed on the next line.
@@ -407,10 +405,8 @@ Datum LWGEOM_line_interpolate_point(PG_FUNCTION_ARGS)
 		{
 			double dseg = (distance - tlength) / slength;
 			interpolate_point4d(&p1, &p2, &pt, dseg);
-			opa = pointArray_construct((uchar *)&pt,
-			                           TYPE_HASZ(line->type),
-			                           TYPE_HASM(line->type),
-			                           1);
+			opa = ptarray_construct(TYPE_HASZ(line->type), TYPE_HASM(line->type), 1);
+			setPoint4d(opa, 0, &pt);
 			point = lwpoint_construct(line->SRID, 0, opa);
 			srl = lwpoint_serialize(point);
 			/* We shouldn't need this, the memory context is getting freed on the next line
@@ -423,10 +419,8 @@ Datum LWGEOM_line_interpolate_point(PG_FUNCTION_ARGS)
 	/* Return the last point on the line. This shouldn't happen, but
 	 * could if there's some floating point rounding errors. */
 	getPoint4d_p(ipa, ipa->npoints-1, &pt);
-	opa = pointArray_construct((uchar *)&pt,
-	                           TYPE_HASZ(line->type),
-	                           TYPE_HASM(line->type),
-	                           1);
+	opa = ptarray_construct(TYPE_HASZ(line->type), TYPE_HASM(line->type), 1);
+	setPoint4d(opa, 0, &pt);
 	point = lwpoint_construct(line->SRID, 0, opa);
 	srl = lwpoint_serialize(point);
 	/* We shouldn't need this, the memory context is getting freed on the next line
@@ -513,6 +507,7 @@ LWCOLLECTION *lwcollection_grid(LWCOLLECTION *coll, gridspec *grid);
 LWPOINT * lwpoint_grid(LWPOINT *point, gridspec *grid);
 LWPOLY * lwpoly_grid(LWPOLY *poly, gridspec *grid);
 LWLINE *lwline_grid(LWLINE *line, gridspec *grid);
+LWCIRCSTRING *lwcircstring_grid(LWCIRCSTRING *line, gridspec *grid);
 POINTARRAY *ptarray_grid(POINTARRAY *pa, gridspec *grid);
 Datum LWGEOM_snaptogrid(PG_FUNCTION_ARGS);
 Datum LWGEOM_snaptogrid_pointoff(PG_FUNCTION_ARGS);
@@ -607,6 +602,23 @@ lwline_grid(LWLINE *line, gridspec *grid)
 
 	/* TODO: grid bounding box... */
 	oline = lwline_construct(line->SRID, NULL, opa);
+
+	return oline;
+}
+
+LWCIRCSTRING *
+lwcircstring_grid(LWCIRCSTRING *line, gridspec *grid)
+{
+	LWCIRCSTRING *oline;
+	POINTARRAY *opa;
+
+	opa = ptarray_grid(line->points, grid);
+
+	/* Skip line3d with less then 2 points */
+	if ( opa->npoints < 2 ) return NULL;
+
+	/* TODO: grid bounding box... */
+	oline = lwcircstring_construct(line->SRID, NULL, opa);
 
 	return oline;
 }
@@ -745,6 +757,12 @@ lwgeom_grid(LWGEOM *lwgeom, gridspec *grid)
 		return (LWGEOM *)lwline_grid((LWLINE *)lwgeom, grid);
 	case POLYGONTYPE:
 		return (LWGEOM *)lwpoly_grid((LWPOLY *)lwgeom, grid);
+	case CIRCSTRINGTYPE:
+		return (LWGEOM*)lwcircstring_grid((LWCIRCSTRING *)lwgeom, grid);
+	case CURVEPOLYTYPE:
+	case COMPOUNDTYPE:
+	case MULTICURVETYPE:
+	case MULTISURFACETYPE:
 	case MULTIPOINTTYPE:
 	case MULTILINETYPE:
 	case MULTIPOLYGONTYPE:
@@ -1139,7 +1157,7 @@ Datum LWGEOM_line_substring(PG_FUNCTION_ARGS)
 			/* Calculate proportions for this subline */
 			minprop = maxprop;
 			maxprop = sublength / length;
-			
+
 			/* This subline doesn't reach the lowest proportion requested 
 			   or is beyond the highest proporton */
 			if( from > maxprop || to < minprop )
@@ -1149,25 +1167,24 @@ Datum LWGEOM_line_substring(PG_FUNCTION_ARGS)
 				subfrom = 0.0;
 			if( to >= maxprop )
 				subto = 1.0;
-				
+
 			if( from > minprop && from <= maxprop )
 				subfrom = (from - minprop) / (maxprop - minprop);
 
 			if( to < maxprop && to >= minprop )
 				subto = (to - minprop) / (maxprop - minprop);
 				
-			
 			opa = ptarray_substring(subline->points, subfrom, subto);
 			if( opa && opa->npoints > 0 )
 			{
 				if ( opa->npoints == 1 ) /* Point returned */
 				{
-					geoms[g] = (LWGEOM *)lwpoint_construct(iline->SRID, NULL, opa);
+					geoms[g] = (LWGEOM *)lwpoint_construct(-1, NULL, opa);
 					homogeneous = LW_FALSE;
 				}
 				else
 				{
-					geoms[g] = (LWGEOM *)lwline_construct(iline->SRID, NULL, opa);
+					geoms[g] = (LWGEOM *)lwline_construct(-1, NULL, opa);
 				}
 				g++;
 			}
@@ -1183,7 +1200,7 @@ Datum LWGEOM_line_substring(PG_FUNCTION_ARGS)
 	}
 	else
 	{
-		elog(ERROR,"line_interpolate_point: 1st arg isnt a line");
+		elog(ERROR,"line_substring: 1st arg isnt a line");
 		PG_RETURN_NULL();
 	}
 
@@ -1345,7 +1362,8 @@ int point_in_ring_rtree(RTREE_NODE *root, POINT2D *point)
 		}
 
 		/* a point on the boundary of a ring is not contained. */
-		if (fabs(side) < 1e-12)
+		/* WAS: if (fabs(side) < 1e-12), see #852 */
+		if (side == 0.0)
 		{
 			if (isOnSegment(&seg1, &seg2, point) == 1)
 			{
@@ -1424,7 +1442,8 @@ int point_in_ring(POINTARRAY *pts, POINT2D *point)
 		}
 
 		/* a point on the boundary of a ring is not contained. */
-		if (fabs(side) < 1e-12)
+		/* WAS: if (fabs(side) < 1e-12), see #852 */
+		if (side == 0.0)
 		{
 			if (isOnSegment(&seg1, &seg2, point) == 1)
 			{

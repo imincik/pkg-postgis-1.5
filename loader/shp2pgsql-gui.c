@@ -1,5 +1,5 @@
 /**********************************************************************
- * $Id: shp2pgsql-gui.c 5983 2010-09-19 11:27:05Z mcayland $
+ * $Id: shp2pgsql-gui.c 9206 2012-02-15 22:06:06Z pramsey $
  *
  * PostGIS - Spatial Types for PostgreSQL
  * http://postgis.refractions.net
@@ -23,7 +23,7 @@
 #include "libpq-fe.h"
 #include "shp2pgsql-core.h"
 
-#define GUI_RCSID "shp2pgsql-gui $Revision: 5983 $"
+#define GUI_RCSID "shp2pgsql-gui $Revision: 9206 $"
 
 /*
 ** Global variables for GUI only
@@ -1252,7 +1252,7 @@ usage()
 int
 main(int argc, char *argv[])
 {
-	char c;
+	int c;
 
 	/* Set default configuration */
 	config = malloc(sizeof(SHPLOADERCONFIG));

@@ -1,6 +1,6 @@
 
 /**********************************************************************
- * $Id: measures.c 6031 2010-09-29 20:43:00Z nicklas $
+ * $Id: measures.c 10242 2012-09-06 22:43:07Z pramsey $
  *
  * PostGIS - Spatial Types for PostgreSQL
  * http://postgis.refractions.net
@@ -657,7 +657,7 @@ lw_dist2d_poly_poly(LWPOLY *poly1, LWPOLY *poly2, DISTPTS *dl)
  * Returns minimum distance between point and pointarray
  */
 int
-lw_dist2d_pt_ptarray(POINT2D *p, POINTARRAY *pa,DISTPTS *dl)
+lw_dist2d_pt_ptarray(POINT2D *p, POINTARRAY *pa, DISTPTS *dl)
 {
 	int t;
 	POINT2D	start, end;
@@ -666,6 +666,8 @@ lw_dist2d_pt_ptarray(POINT2D *p, POINTARRAY *pa,DISTPTS *dl)
 	LWDEBUG(2, "lw_dist2d_pt_ptarray is called");
 
 	getPoint2d_p(pa, 0, &start);
+	
+	if ( !lw_dist2d_pt_pt(p, &start, dl) ) return LW_FALSE;
 
 	for (t=1; t<pa->npoints; t++)
 	{
@@ -1557,15 +1559,26 @@ lwgeom_polygon_area(LWPOLY *poly)
 		int j;
 		POINTARRAY *ring = poly->rings[i];
 		double ringarea = 0.0;
+		POINT2D o;
 
 		LWDEBUGF(4, " rings %d has %d points", i, ring->npoints);
 
 		if ( ! ring->npoints ) continue; /* empty ring */
-		for (j=0; j<ring->npoints-1; j++)
+
+		// first vertex is the local origin
+		getPoint2d_p(ring, 0, &p1);
+		o.x = p1.x;	
+		o.y = p1.y;	
+		p1.x=0.0;
+		p1.y=0.0;		
+		
+		for (j=1; j<ring->npoints; j++)
 		{
-			getPoint2d_p(ring, j, &p1);
-			getPoint2d_p(ring, j+1, &p2);
+			getPoint2d_p(ring, j, &p2);
+			p2.x -= o.x;
+			p2.y -= o.y;
 			ringarea += ( p1.x * p2.y ) - ( p1.y * p2.x );
+			p1 = p2;
 		}
 
 		ringarea  /= 2.0;

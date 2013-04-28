@@ -36,6 +36,7 @@ PG_OBJS=lwgeom_pg.o \
 	lwgeom_box.o \
 	lwgeom_box3d.o \
 	lwgeom_box2dfloat4.o \
+	lwgeom_cache.o \
 	lwgeom_chip.o \
 	lwgeom_geos.o \
 	lwgeom_geos_prepared.o \
@@ -75,8 +76,8 @@ SHLIB_LINK+= -L/usr/local/lib  -lgeos_c -lproj -L/opt/local/lib -lxml2 -lz -lpth
 EXTRA_CLEAN=$(SQL_OBJS)
 
 # PGXS information
-PG_CONFIG = /usr/local/pgsql/9.1/bin/pg_config 
-PGXS := /usr/local/pgsql/9.1/lib/pgxs/src/makefiles/pgxs.mk
+PG_CONFIG = /usr/local/pgsql/9.2/bin/pg_config 
+PGXS := /usr/local/pgsql/9.2/lib/pgxs/src/makefiles/pgxs.mk
 include $(PGXS)
 
 # PGXS override feature. The ability to allow PostGIS to install itself

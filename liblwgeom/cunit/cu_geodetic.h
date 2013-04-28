@@ -1,5 +1,5 @@
 /**********************************************************************
- * $Id: cu_geodetic.h 4947 2009-11-30 20:50:57Z pramsey $
+ * $Id: cu_geodetic.h 10529 2012-10-23 21:19:28Z pramsey $
  *
  * PostGIS - Spatial Types for PostgreSQL
  * http://postgis.refractions.net
@@ -32,9 +32,9 @@ void test_gbox_calculation(void);
 void test_edge_intersection(void);
 void test_edge_distance_to_point(void);
 void test_edge_distance_to_edge(void);
-void test_ptarray_point_in_ring_winding(void);
+void test_ptarray_contains_point_winding(void);
 void test_lwgeom_distance_sphere(void);
-void test_ptarray_point_in_ring(void);
+void test_ptarray_contains_point(void);
 void test_spheroid_distance(void);
 void test_spheroid_area(void);
 void test_lwpoly_covers_point2d(void);

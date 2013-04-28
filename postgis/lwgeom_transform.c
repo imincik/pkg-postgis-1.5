@@ -1,5 +1,5 @@
 /**********************************************************************
- * $Id: lwgeom_transform.c 5181 2010-02-01 17:35:55Z pramsey $
+ * $Id: lwgeom_transform.c 10681 2012-11-15 18:46:31Z pramsey $
  *
  * PostGIS - Spatial Types for PostgreSQL
  * http://postgis.refractions.net
@@ -370,9 +370,17 @@ char* GetProj4StringSPI(int srid)
 		TupleDesc tupdesc = SPI_tuptable->tupdesc;
 		SPITupleTable *tuptable = SPI_tuptable;
 		HeapTuple tuple = tuptable->vals[0];
-
-		/* Make a projection object out of it */
-		strncpy(proj_str, SPI_getvalue(tuple, tupdesc, 1), maxproj4len - 1);
+		char *proj4text = SPI_getvalue(tuple, tupdesc, 1);
+		
+		if ( proj4text )
+		{
+			/* Make a projection object out of it */
+			strncpy(proj_str, proj4text, maxproj4len - 1);
+		}
+		else
+		{
+			proj_str[0] = '\0';
+		}
 	}
 	else
 	{
@@ -480,13 +488,9 @@ AddToPROJ4SRSCache(PROJ4PortalCache *PROJ4Cache, int srid, int other_srid)
 	}
 
 	projection = make_project(proj_str);
-
-	pj_errno_ref = pj_get_errno_ref();
-	if ( (projection == NULL) || (*pj_errno_ref))
+	if ( ! projection )
 	{
-		/* we need this for error reporting */
-		/*pfree(projection); */
-		elog(ERROR, "AddToPROJ4SRSCache: couldn't parse proj4 string: '%s': %s", proj_str, pj_strerrno(*pj_errno_ref));
+		elog(ERROR, "AddToPROJ4SRSCache: couldn't parse proj4 string: '%s'", proj_str);
 	}
 
 	/*

@@ -21,7 +21,7 @@
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA or visit the web at
  * http://www.gnu.org.
  * 
- * $Id: LineString.java 1622 2005-04-15 14:04:34Z mschaber $
+ * $Id: LineString.java 8933 2012-01-26 16:22:53Z pramsey $
  */
 
 package org.postgis;
@@ -67,7 +67,7 @@ public class LineString extends PointComposedGeom {
 
         boolean cutPoint = this.getLastPoint() == null
                 || this.getLastPoint().equals(other.getFirstPoint());
-        int count = points.length + points.length - (cutPoint ? 1 : 0);
+        int count = points.length + opoints.length - (cutPoint ? 1 : 0);
         Point[] p = new Point[count];
 
         // Maybe we should use System.arrayCopy here?

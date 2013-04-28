@@ -1,5 +1,5 @@
 /**********************************************************************
- * $Id: shp2pgsql-cli.c 6373 2010-12-14 04:57:59Z pramsey $
+ * $Id: shp2pgsql-cli.c 9206 2012-02-15 22:06:06Z pramsey $
  *
  * PostGIS - Spatial Types for PostgreSQL
  * http://postgis.refractions.net
@@ -54,8 +54,7 @@ main (int argc, char **argv)
 	SHPLOADERCONFIG *config;
 	SHPLOADERSTATE *state;
 	char *header, *footer, *record;
-	char c;
-	int ret, i;
+	int ret, c, i;
 
 
 	/* If no options are specified, display usage */
@@ -106,7 +105,7 @@ main (int argc, char **argv)
 			break;
 
 		case 'g':
-			config->geom = pgis_optarg;
+			config->geom = strdup(pgis_optarg);
 			break;
 
 		case 'k':

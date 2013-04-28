@@ -1,5 +1,5 @@
 /**********************************************************************
- * $Id: lwgeom_svg.c 5210 2010-02-06 10:49:00Z colivier $
+ * $Id: lwgeom_svg.c 8245 2011-11-26 06:05:22Z pramsey $
  *
  * PostGIS - Spatial Types for PostgreSQL
  * http://postgis.refractions.net
@@ -592,6 +592,7 @@ assvg_inspected_size(LWGEOM_INSPECTED *insp, bool relative, int precision)
 		poly=lwgeom_getpoly_inspected(insp, 0);
 		size = assvg_polygon_size(poly, relative, precision);
 		lwpoly_release(poly);
+		break;
 
 	case MULTIPOINTTYPE:
 		size = assvg_multipoint_size(insp, relative, precision);

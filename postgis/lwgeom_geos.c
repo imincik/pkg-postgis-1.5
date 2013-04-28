@@ -1,10 +1,10 @@
 /**********************************************************************
- * $Id: lwgeom_geos.c 7344 2011-06-09 13:59:42Z pramsey $
+ * $Id: lwgeom_geos.c 10645 2012-11-06 00:21:43Z pramsey $
  *
  * PostGIS - Spatial Types for PostgreSQL
  * http://postgis.refractions.net
  *
- * Copyright 2009 Sandro Santilli <strk@keybit.net>
+ * Copyright 2009-2012 Sandro Santilli <strk@keybit.net>
  * Copyright 2008 Paul Ramsey <pramsey@cleverelephant.ca>
  * Copyright 2001-2003 Refractions Research Inc.
  *
@@ -17,6 +17,7 @@
 #include "lwgeom_rtree.h"
 #include "lwgeom_geos_prepared.h"
 #include "lwgeom_functions_analytic.h"
+#include "lwgeom_cache.h"
 
 #include <string.h>
 
@@ -69,10 +70,29 @@ Datum hausdorffdistancedensify(PG_FUNCTION_ARGS);
 Datum pgis_union_geometry_array_old(PG_FUNCTION_ARGS);
 Datum pgis_union_geometry_array(PG_FUNCTION_ARGS);
 
-
 /*
 ** Prototypes end
 */
+
+static RTREE_POLY_CACHE *
+GetRtreeCache(FunctionCallInfoData *fcinfo, LWGEOM *lwgeom, uchar *poly)
+{
+	MemoryContext old_context;
+	GeomCache* supercache = GetGeomCache(fcinfo);
+	RTREE_POLY_CACHE *poly_cache = supercache->rtree;
+
+	/*
+	 * Switch the context to the function-scope context,
+	 * retrieve the appropriate cache object, cache it for
+	 * future use, then switch back to the local context.
+	 */
+	old_context = MemoryContextSwitchTo(fcinfo->flinfo->fn_mcxt);
+	poly_cache = retrieveCache(lwgeom, poly, poly_cache);
+	supercache->rtree = poly_cache;
+	MemoryContextSwitchTo(old_context);
+
+	return poly_cache;
+}
 
 
 PG_FUNCTION_INFO_V1(postgis_geos_version);
@@ -1564,7 +1584,6 @@ Datum contains(PG_FUNCTION_ARGS)
 	LWGEOM *lwgeom;
 	LWPOINT *point;
 	RTREE_POLY_CACHE *poly_cache;
-	MemoryContext old_context;
 	bool result;
 #ifdef PREPARED_GEOM
 	PrepGeomCache *prep_cache;
@@ -1607,15 +1626,7 @@ Datum contains(PG_FUNCTION_ARGS)
 
 		POSTGIS_DEBUGF(3, "Precall point_in_multipolygon_rtree %p, %p", lwgeom, point);
 
-		/*
-		 * Switch the context to the function-scope context,
-		 * retrieve the appropriate cache object, cache it for
-		 * future use, then switch back to the local context.
-		 */
-		old_context = MemoryContextSwitchTo(fcinfo->flinfo->fn_mcxt);
-		poly_cache = retrieveCache(lwgeom, SERIALIZED_FORM(geom1), fcinfo->flinfo->fn_extra);
-		fcinfo->flinfo->fn_extra = poly_cache;
-		MemoryContextSwitchTo(old_context);
+		poly_cache = GetRtreeCache(fcinfo, lwgeom, SERIALIZED_FORM(geom1));
 
 		if ( poly_cache->ringIndices )
 		{
@@ -1767,7 +1778,6 @@ Datum covers(PG_FUNCTION_ARGS)
 	LWGEOM *lwgeom;
 	LWPOINT *point;
 	RTREE_POLY_CACHE *poly_cache;
-	MemoryContext old_context;
 #ifdef PREPARED_GEOM
 	PrepGeomCache *prep_cache;
 #endif
@@ -1807,15 +1817,7 @@ Datum covers(PG_FUNCTION_ARGS)
 
 		POSTGIS_DEBUGF(3, "Precall point_in_multipolygon_rtree %p, %p", lwgeom, point);
 
-		/*
-		 * Switch the context to the function-scope context,
-		 * retrieve the appropriate cache object, cache it for
-		 * future use, then switch back to the local context.
-		 */
-		old_context = MemoryContextSwitchTo(fcinfo->flinfo->fn_mcxt);
-		poly_cache = retrieveCache(lwgeom, SERIALIZED_FORM(geom1), fcinfo->flinfo->fn_extra);
-		fcinfo->flinfo->fn_extra = poly_cache;
-		MemoryContextSwitchTo(old_context);
+		poly_cache = GetRtreeCache(fcinfo, lwgeom, SERIALIZED_FORM(geom1));
 
 		if ( poly_cache->ringIndices )
 		{
@@ -1901,7 +1903,6 @@ Datum within(PG_FUNCTION_ARGS)
 	LWGEOM *lwgeom;
 	LWPOINT *point;
 	int type1, type2;
-	MemoryContext old_context;
 	RTREE_POLY_CACHE *poly_cache;
 
 	PROFSTART(PROF_QRUN);
@@ -1939,15 +1940,7 @@ Datum within(PG_FUNCTION_ARGS)
 		point = lwpoint_deserialize(SERIALIZED_FORM(geom1));
 		lwgeom = lwgeom_deserialize(SERIALIZED_FORM(geom2));
 
-		/*
-		 * Switch the context to the function-scope context,
-		 * retrieve the appropriate cache object, cache it for
-		 * future use, then switch back to the local context.
-		 */
-		old_context = MemoryContextSwitchTo(fcinfo->flinfo->fn_mcxt);
-		poly_cache = retrieveCache(lwgeom, SERIALIZED_FORM(geom2), fcinfo->flinfo->fn_extra);
-		fcinfo->flinfo->fn_extra = poly_cache;
-		MemoryContextSwitchTo(old_context);
+		poly_cache = GetRtreeCache(fcinfo, lwgeom, SERIALIZED_FORM(geom2));
 
 		if ( poly_cache->ringIndices )
 		{
@@ -2030,7 +2023,6 @@ Datum coveredby(PG_FUNCTION_ARGS)
 	LWGEOM *lwgeom;
 	LWPOINT *point;
 	int type1, type2;
-	MemoryContext old_context;
 	RTREE_POLY_CACHE *poly_cache;
 	char *patt = "**F**F***";
 
@@ -2071,15 +2063,7 @@ Datum coveredby(PG_FUNCTION_ARGS)
 		point = lwpoint_deserialize(SERIALIZED_FORM(geom1));
 		lwgeom = lwgeom_deserialize(SERIALIZED_FORM(geom2));
 
-		/*
-		 * Switch the context to the function-scope context,
-		 * retrieve the appropriate cache object, cache it for
-		 * future use, then switch back to the local context.
-		 */
-		old_context = MemoryContextSwitchTo(fcinfo->flinfo->fn_mcxt);
-		poly_cache = retrieveCache(lwgeom, SERIALIZED_FORM(geom2), fcinfo->flinfo->fn_extra);
-		fcinfo->flinfo->fn_extra = poly_cache;
-		MemoryContextSwitchTo(old_context);
+		poly_cache = GetRtreeCache(fcinfo, lwgeom, SERIALIZED_FORM(geom2));
 
 		if ( poly_cache->ringIndices )
 		{
@@ -2224,7 +2208,6 @@ Datum intersects(PG_FUNCTION_ARGS)
 	int type1, type2, polytype;
 	LWPOINT *point;
 	LWGEOM *lwgeom;
-	MemoryContext old_context;
 	RTREE_POLY_CACHE *poly_cache;
 #ifdef PREPARED_GEOM
 	PrepGeomCache *prep_cache;
@@ -2276,15 +2259,8 @@ Datum intersects(PG_FUNCTION_ARGS)
 			serialized_poly = SERIALIZED_FORM(geom1);
 			polytype = type1;
 		}
-		/*
-		 * Switch the context to the function-scope context,
-		 * retrieve the appropriate cache object, cache it for
-		 * future use, then switch back to the local context.
-		 */
-		old_context = MemoryContextSwitchTo(fcinfo->flinfo->fn_mcxt);
-		poly_cache = retrieveCache(lwgeom, serialized_poly, fcinfo->flinfo->fn_extra);
-		fcinfo->flinfo->fn_extra = poly_cache;
-		MemoryContextSwitchTo(old_context);
+
+		poly_cache = GetRtreeCache(fcinfo, lwgeom, serialized_poly);
 
 		if ( poly_cache->ringIndices )
 		{
@@ -2875,6 +2851,7 @@ GEOS2LWGEOM(const GEOSGeometry *geom, char want3d)
 			{
 				g = GEOSGetGeometryN(geom, i);
 				geoms[i] = GEOS2LWGEOM(g, want3d);
+				geoms[i]->SRID = -1;
 			}
 		}
 		return (LWGEOM *)lwcollection_construct(type,
@@ -2940,10 +2917,12 @@ ptarray_to_GEOSCoordSeq(POINTARRAY *pa)
 		POSTGIS_DEBUGF(4, "Point: %g,%g,%g", p.x, p.y, p.z);
 
 #if POSTGIS_GEOS_VERSION < 33
-    /* Make sure we don't pass any infinite values down into GEOS */
-    /* GEOS 3.3+ is supposed to  handle this stuff OK */
-    if ( isinf(p.x) || isinf(p.y) || (dims == 3 && isinf(p.z)) )
-      lwerror("Infinite coordinate value found in geometry.");
+		/* Make sure we don't pass any infinite values down into GEOS */
+		/* GEOS 3.3+ is supposed to  handle this stuff OK */
+		if ( isinf(p.x) || isinf(p.y) || (dims == 3 && isinf(p.z)) )
+			lwerror("Infinite coordinate value found in geometry.");
+  		if ( isnan(p.x) || isnan(p.y) || (dims == 3 && isnan(p.z)) )
+			lwerror("NaN coordinate value found in geometry.");
 #endif
 
 		GEOSCoordSeq_setX(sq, i, p.x);
@@ -3004,22 +2983,29 @@ LWGEOM2GEOS(LWGEOM *lwgeom)
 
 	case POLYGONTYPE:
 		lwpoly = (LWPOLY *)lwgeom;
-		sq = ptarray_to_GEOSCoordSeq(lwpoly->rings[0]);
-		shell = GEOSGeom_createLinearRing(sq);
-		if ( ! shell ) return NULL;
-		/*lwerror("LWGEOM2GEOS: exception during polygon shell conversion"); */
-		ngeoms = lwpoly->nrings-1;
-		geoms = malloc(sizeof(GEOSGeom)*ngeoms);
-		for (i=1; i<lwpoly->nrings; ++i)
+		if ( lwpoly->nrings > 0 )
 		{
-			sq = ptarray_to_GEOSCoordSeq(lwpoly->rings[i]);
-			geoms[i-1] = GEOSGeom_createLinearRing(sq);
-			if ( ! geoms[i-1] ) return NULL;
-			/*lwerror("LWGEOM2GEOS: exception during polygon hole conversion"); */
+			sq = ptarray_to_GEOSCoordSeq(lwpoly->rings[0]);
+			shell = GEOSGeom_createLinearRing(sq);
+			if ( ! shell ) return NULL;
+			/*lwerror("LWGEOM2GEOS: exception during polygon shell conversion"); */
+			ngeoms = lwpoly->nrings-1;
+			geoms = malloc(sizeof(GEOSGeom)*ngeoms);
+			for (i=1; i<lwpoly->nrings; ++i)
+			{
+				sq = ptarray_to_GEOSCoordSeq(lwpoly->rings[i]);
+				geoms[i-1] = GEOSGeom_createLinearRing(sq);
+				if ( ! geoms[i-1] ) return NULL;
+				/*lwerror("LWGEOM2GEOS: exception during polygon hole conversion"); */
+			}
+			g = GEOSGeom_createPolygon(shell, geoms, ngeoms);
+			if ( ! g ) return NULL;
+			free(geoms);
 		}
-		g = GEOSGeom_createPolygon(shell, geoms, ngeoms);
-		if ( ! g ) return NULL;
-		free(geoms);
+		else
+		{
+			g = GEOSGeom_createCollection(GEOS_GEOMETRYCOLLECTION, NULL, 0);
+		}		
 		break;
 	case MULTIPOINTTYPE:
 	case MULTILINETYPE:
@@ -3049,7 +3035,7 @@ LWGEOM2GEOS(LWGEOM *lwgeom)
 		break;
 
 	default:
-		lwerror("Unknown geometry type: %d", type);
+		lwerror("Unknown geometry type: %s", lwgeom_typename(type));
 
 		return NULL;
 	}
@@ -3170,6 +3156,7 @@ Datum polygonize_garray(PG_FUNCTION_ARGS)
 	{
 		PG_LWGEOM *geom = (PG_LWGEOM *)(ARR_DATA_PTR(array)+offset);
 		offset += INTALIGN(VARSIZE(geom));
+		if ( TYPE_HASZ(geom->type) ) is3d = 1;
 
 		vgeoms[i] = (GEOSGeometry *)POSTGIS2GEOS(geom);
 		if ( ! i )

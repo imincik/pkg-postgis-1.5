@@ -1,5 +1,5 @@
 /**********************************************************************
- * $Id: ptarray.c 5924 2010-09-10 08:50:50Z mcayland $
+ * $Id: ptarray.c 9631 2012-04-12 07:44:26Z strk $
  *
  * PostGIS - Spatial Types for PostgreSQL
  * http://postgis.refractions.net
@@ -776,6 +776,10 @@ ptarray_locate_point(POINTARRAY *pa, POINT2D *p)
 	tlen = lwgeom_pointarray_length2d(pa);
 
 	LWDEBUGF(3, "tlen %g", tlen);
+
+	/* Location of any point on a zero-length line is 0 */
+	/* See http://trac.osgeo.org/postgis/ticket/1772#comment:2 */
+	if ( tlen == 0 ) return 0;
 
 	plen=0;
 	getPoint2d_p(pa, 0, &start);

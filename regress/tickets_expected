@@ -18,10 +18,9 @@ ERROR:  Unsupported geometry type: CircularString
 #112|GEOMETRYCOLLECTION(POINT(-10 50))
 ERROR:  Geometry argument does not have an 'M' ordinate
 #116|POLYGON EMPTY
-ERROR:  lwgeom_grid: Unsupported geometry type: CircularString
+#122|CIRCULARSTRING(220268 150415,220227 150505,220227 150406)
 #124a|COMPOUNDCURVE(CIRCULARSTRING(0 0,1 1,1 0),(1 0,30 5),CIRCULARSTRING(30 5,34 56,67 89))
 ERROR:  incontinuous compound curve
-HINT:  "...IRCULARSTRING(0 0,1 1,1 0),(1 0,30 6)" <-- parse error at position 52 within geometry
 #145a|0107000020E610000000000000
 #145b|0
 #146|0|t|GEOMETRYCOLLECTION(LINESTRING(0 0,-1 -1),MULTIPOINT(1 2,2 3))
@@ -39,7 +38,7 @@ NOTICE:  No points in input array
 #179a|
 NOTICE:  No points in input array
 #179b|
-#183|COMPOUNDCURVE(CIRCULARSTRING(0 0,0.500000000000184 1.20710678118655,1 0),(1 0,0 1))
+#183|COMPOUNDCURVE(CIRCULARSTRING(0 0,0.5 1.2071,1 0),(1 0,0 1))
 #210a|
 NOTICE:  No points in input array
 #210b|
@@ -76,3 +75,32 @@ NOTICE:  No points in input array
 #845|t
 #884|1|f
 #884|2|t
+WARNING:  No stats for "<current>"."t"."g" (empty or not analyzed)
+#877.1|
+WARNING:  No stats for "public"."t"."g" (empty or not analyzed)
+#877.2|
+WARNING:  No stats for "<current>"."t"."g" (empty or not analyzed)
+#877.3|
+#877.4|BOX(-10 -50,20 30)
+#1344|25
+#852.1|1|f|f
+#852.1|2|f|f
+#852.2|1|t|t
+#852.2|2|t|t
+#1580.1|ST_Point|3395
+ERROR:  transform: couldn't project point (180 90 0): tolerance condition error (-20)
+#1580.3|ST_Point|3395
+#1595|SRID=32019;MULTILINESTRING((0 0,0 1))
+#1596.1|public.road_pg.roads_geom SRID:4326 TYPE:POINT DIMS:2 
+ERROR:  invalid SRID: 330000 not found in spatial_ref_sys
+#1596.3|4326
+#1697.1|0
+#1170|90
+#1252|MULTIPOLYGON(((0 0,1 1,1 0,0 0)),((4 4,4 5,5 5,4 4)))
+#1264|t
+ERROR:  ST_Segmentize: invalid max_distance 0 (must be >= 0)
+ERROR:  invalid GML representation
+#1957|1
+#2048|1|f|f
+#2048|2|t|t
+#2048|3|f|f

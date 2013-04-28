@@ -1,5 +1,5 @@
 /**********************************************************************
- * $Id: geography_inout.c 7247 2011-05-25 18:42:02Z pramsey $
+ * $Id: geography_inout.c 9665 2012-04-25 17:52:58Z pramsey $
  *
  * PostGIS - Spatial Types for PostgreSQL
  * Copyright 2009 Paul Ramsey <pramsey@cleverelephant.ca>
@@ -945,9 +945,12 @@ Datum geography_from_geometry(PG_FUNCTION_ARGS)
 	/* Check if the geography has valid coordinate range. */
 	if ( lwgeom_check_geodetic(lwgeom) == LW_FALSE )
 	{
-		ereport(ERROR, (
-		            errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-		            errmsg("Coordinate values are out of range [-180 -90, 180 90] for GEOGRAPHY type" )));
+		if ( (! lwgeom_nudge_geodetic(lwgeom)) || lwgeom_check_geodetic(lwgeom) == LW_FALSE )
+		{
+			ereport(ERROR, (
+			        errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+			        errmsg("Coordinate values are out of range [-180 -90, 180 90] for GEOGRAPHY type" )));
+		}
 	}
 
 	PG_RETURN_POINTER(g_ser);
