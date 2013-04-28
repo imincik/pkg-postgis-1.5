@@ -1,5 +1,5 @@
 /**********************************************************************
- * $Id: lwgeom_in_gml.c 7076 2011-04-30 08:38:39Z colivier $
+ * $Id: lwgeom_in_gml.c 10254 2012-09-07 20:04:48Z pramsey $
  *
  * PostGIS - Spatial Types for PostgreSQL
  * http://postgis.refractions.net
@@ -1219,6 +1219,10 @@ static LWGEOM* parse_gml_polygon(xmlNodePtr xnode, bool *hasz, int *root_srid)
 			if (srs->reverse_axis) ppa[0] = gml_reverse_axis_pa(ppa[0]);
 		}
 	}
+
+	/* Found an <exterior> or <outerBoundaryIs> but no rings?!? We're outa here! */
+	if ( ! ppa )
+		lwerror("invalid GML representation");
 
 	for (ring=1, xa = xnode->children ; xa != NULL ; xa = xa->next)
 	{

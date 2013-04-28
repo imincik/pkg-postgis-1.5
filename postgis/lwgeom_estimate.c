@@ -1,5 +1,5 @@
 /**********************************************************************
- * $Id: lwgeom_estimate.c 5181 2010-02-01 17:35:55Z pramsey $
+ * $Id: lwgeom_estimate.c 10579 2012-10-29 18:00:32Z pramsey $
  *
  * PostGIS - Spatial Types for PostgreSQL
  * http://postgis.refractions.net
@@ -22,6 +22,10 @@
 
 #include "liblwgeom.h"
 #include "lwgeom_pg.h"
+
+#if POSTGIS_PGSQL_VERSION >= 92
+#include "utils/rel.h"
+#endif
 
 #include <math.h>
 #if HAVE_IEEEFP_H
@@ -1343,6 +1347,7 @@ Datum LWGEOM_estimated_extent(PG_FUNCTION_ARGS)
 	bool isnull;
 	BOX2DFLOAT4 *box;
 	size_t querysize;
+	Datum binval;
 
 	if ( PG_NARGS() == 3 )
 	{
@@ -1412,11 +1417,11 @@ Datum LWGEOM_estimated_extent(PG_FUNCTION_ARGS)
 	superuser (by marking the function as SECURITY DEFINER) and check permissions ourselves */
 	if ( txnsp )
 	{
-		sprintf(query, "SELECT has_table_privilege((SELECT usesysid FROM pg_user WHERE usename = session_user), '%s.%s', 'select')", nsp, tbl);
+		sprintf(query, "SELECT has_table_privilege((SELECT usesysid FROM pg_user WHERE usename = session_user), '\"%s\".\"%s\"', 'select')", nsp, tbl);
 	}
 	else
 	{
-		sprintf(query, "SELECT has_table_privilege((SELECT usesysid FROM pg_user WHERE usename = session_user), '%s', 'select')", tbl);
+		sprintf(query, "SELECT has_table_privilege((SELECT usesysid FROM pg_user WHERE usename = session_user), '\"%s\"', 'select')", tbl);
 	}
 
 	POSTGIS_DEBUGF(4, "permission check sql query is: %s", query);
@@ -1424,8 +1429,8 @@ Datum LWGEOM_estimated_extent(PG_FUNCTION_ARGS)
 	SPIcode = SPI_exec(query, 1);
 	if (SPIcode != SPI_OK_SELECT)
 	{
-		SPI_finish();
 		elog(ERROR, "LWGEOM_estimated_extent: couldn't execute permission check sql via SPI");
+		SPI_finish();
 		PG_RETURN_NULL();
 	}
 
@@ -1433,10 +1438,11 @@ Datum LWGEOM_estimated_extent(PG_FUNCTION_ARGS)
 	tupdesc = SPI_tuptable->tupdesc;
 	tuple = tuptable->vals[0];
 
-	if (!DatumGetBool(SPI_getbinval(tuple, tupdesc, 1, &isnull)))
+	binval = SPI_getbinval(tuple, tupdesc, 1, &isnull);
+	if ( isnull || !DatumGetBool(binval) )
 	{
-		SPI_finish();
 		elog(ERROR, "LWGEOM_estimated_extent: permission denied for relation %s", tbl);
+		SPI_finish();
 		PG_RETURN_NULL();
 	}
 
@@ -1456,17 +1462,22 @@ Datum LWGEOM_estimated_extent(PG_FUNCTION_ARGS)
 	SPIcode = SPI_exec(query, 1);
 	if (SPIcode != SPI_OK_SELECT )
 	{
-		SPI_finish();
 		elog(ERROR,"LWGEOM_estimated_extent: couldnt execute sql via SPI");
+		SPI_finish();
 		PG_RETURN_NULL();
 	}
 	if (SPI_processed != 1)
 	{
-		SPI_finish();
 
 		POSTGIS_DEBUGF(3, " %d stat rows", SPI_processed);
 
-		elog(ERROR, "LWGEOM_estimated_extent: couldn't locate table within current schema");
+		/* 
+		 * TODO: distinguish between empty and not analyzed ?
+		 */
+		elog(WARNING, "No stats for \"%s\".\"%s\".\"%s\" "
+			"(empty or not analyzed)",
+			( nsp ? nsp : "<current>" ), tbl, col);
+		SPI_finish();
 
 		PG_RETURN_NULL() ;
 	}
@@ -1474,17 +1485,18 @@ Datum LWGEOM_estimated_extent(PG_FUNCTION_ARGS)
 	tuptable = SPI_tuptable;
 	tupdesc = SPI_tuptable->tupdesc;
 	tuple = tuptable->vals[0];
-	array = DatumGetArrayTypeP(SPI_getbinval(tuple, tupdesc, 1, &isnull));
-	if (isnull)
+	binval = SPI_getbinval(tuple, tupdesc, 1, &isnull);
+	if ( isnull )
 	{
-		SPI_finish();
 
 		POSTGIS_DEBUG(3, " stats are NULL");
 
 		elog(ERROR, "LWGEOM_estimated_extent: couldn't locate statistics for table");
+		SPI_finish();
 
 		PG_RETURN_NULL();
 	}
+	array = DatumGetArrayTypeP(binval);
 	if ( ArrayGetNItems(ARR_NDIM(array), ARR_DIMS(array)) != 4 )
 	{
 		elog(ERROR, " corrupted histogram");

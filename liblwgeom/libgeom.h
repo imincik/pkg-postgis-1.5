@@ -1,5 +1,5 @@
 /**********************************************************************
- * $Id: libgeom.h 5012 2009-12-16 17:00:26Z pramsey $
+ * $Id: libgeom.h 9665 2012-04-25 17:52:58Z pramsey $
  *
  * PostGIS - Spatial Types for PostgreSQL
  * http://postgis.refractions.net
@@ -359,6 +359,11 @@ extern GSERIALIZED* gserialized_copy(const GSERIALIZED *g);
 * Check that coordinates of LWGEOM are all within the geodetic range.
 */
 extern int lwgeom_check_geodetic(const LWGEOM *geom);
+
+/**
+* Push coordinates into geodetic range.
+*/
+extern int lwgeom_nudge_geodetic(LWGEOM *geom);
 
 /**
 * Calculate the geodetic bounding box for an LWGEOM. Z/M coordinates are 

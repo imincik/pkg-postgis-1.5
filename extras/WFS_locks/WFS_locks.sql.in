@@ -1,6 +1,6 @@
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- 
--- $Id: WFS_locks.sql.in 2394 2006-06-25 22:33:55Z strk $
+-- $Id: WFS_locks.sql.in 10612 2012-10-31 21:16:08Z pramsey $
 --
 -- PostGIS - Spatial Types for PostgreSQL
 -- http://postgis.refractions.net
@@ -228,7 +228,7 @@ CREATEFUNCTION CheckAuth(text, text)
 	RETURNS INT
 	AS
 	'SELECT CheckAuth('''', $1, $2)'
-	LANGUAGE 'SQL';
+	LANGUAGE 'sql';
 
 CREATEFUNCTION CheckAuthTrigger()
 	RETURNS trigger AS 

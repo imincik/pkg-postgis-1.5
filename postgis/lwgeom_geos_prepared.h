@@ -1,5 +1,5 @@
 /**********************************************************************
- * $Id: lwgeom_geos_prepared.h 5129 2010-01-15 17:54:52Z pramsey $
+ * $Id: lwgeom_geos_prepared.h 8887 2012-01-20 08:42:43Z strk $
  *
  * PostGIS - Spatial Types for PostgreSQL
  * http://postgis.refractions.net
@@ -9,6 +9,9 @@
  * the terms of the GNU General Public Licence. See the COPYING file.
  *
  **********************************************************************/
+
+#ifndef LWGEOM_GEOS_PREPARED_H_
+#define LWGEOM_GEOS_PREPARED_H_ 1
 
 #include "postgres.h"
 #include "fmgr.h"
@@ -73,3 +76,4 @@ PrepGeomCache *GetPrepGeomCache(FunctionCallInfoData *fcinfo, PG_LWGEOM *pg_geom
 
 #endif /* PREPARED_GEOM */
 
+#endif /* LWGEOM_GEOS_PREPARED_H_ 1 */

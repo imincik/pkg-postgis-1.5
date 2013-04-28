@@ -1,18 +1,23 @@
 TMPDIR?=/tmp
 
-POSTGIS_PGSQL_VERSION=912
-POSTGIS_GEOS_VERSION=32
-POSTGIS_PROJ_VERSION=47
+POSTGIS_PGSQL_VERSION=92
+POSTGIS_GEOS_VERSION=33
+POSTGIS_PROJ_VERSION=48
 HAVE_LIBXML2=@HAVE_LIBXML2@
+MINGWBUILD=0
 
 # MingW hack: rather than use PGSQL_BINDIR directly, we change
 # to the directory and then use "pwd" to return the path. This
 # ensures that the returned path is in MSYS format, otherwise
 # colons in drive letters will break PATH.
-PGSQL_BINDIR=$(shell pushd "/usr/local/pgsql/9.1/bin" > /dev/null && pwd && popd > /dev/null)
+PGSQL_BINDIR=$(shell pushd "/usr/local/pgsql/9.2/bin" > /dev/null && pwd && popd > /dev/null)
 
 # Where we put our regression installation 
-srcdir=$(shell pwd)
+ifeq ($(MINGWBUILD),1)
+	srcdir=$(shell bash -c "pwd -W")
+else
+	srcdir=$(shell pwd)
+endif
 REGRESS_INSTALLDIR=$(srcdir)/00-regress-install
 
 # 
@@ -37,6 +42,7 @@ TESTS = \
 	loader/PolygonZ \
 	regress \
 	regress_index \
+	regress_management \
 	regress_index_nulls \
 	lwgeom_regress \
 	regress_lrs \
@@ -44,6 +50,7 @@ TESTS = \
 	setpoint \
 	simplify \
 	snaptogrid \
+	summary \
 	affine \
 	wkt \
 	measures \
@@ -62,6 +69,7 @@ TESTS = \
 	kml \
 	in_gml \
 	in_kml \
+	polygonize \
 	regress_ogc \
 	regress_ogc_cover \
 	regress_ogc_prep \

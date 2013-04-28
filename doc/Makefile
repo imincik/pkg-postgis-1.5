@@ -11,7 +11,7 @@
 
 POSTGIS_MAJOR_VERSION=1
 POSTGIS_MINOR_VERSION=5
-POSTGIS_MICRO_VERSION=3
+POSTGIS_MICRO_VERSION=8
 
 XSLTPROC=/opt/local/bin/xsltproc
 XSLBASE=/opt/local/share/xsl/docbook-xsl
@@ -41,9 +41,9 @@ DBLATEX=/opt/local/bin/dblatex
 IMAGEMAGICK=/opt/local/bin/convert
 
 # Directories for postgresql subdirectories
-PGSQL_DOCDIR=/usr/local/pgsql/9.1/share/doc
-PGSQL_MANDIR=/usr/local/pgsql/9.1/share/man
-PGSQL_SHAREDIR=/usr/local/pgsql/9.1/share
+PGSQL_DOCDIR=/usr/local/pgsql/9.2/share/doc
+PGSQL_MANDIR=/usr/local/pgsql/9.2/share/man
+PGSQL_SHAREDIR=/usr/local/pgsql/9.2/share
 
 # If XSLTPROC or XSLBASE were not found during configure, we cannot
 # build the documentation
@@ -111,38 +111,38 @@ doxygen: doxygen.cfg
 	doxygen $<
 
 images: 
-	make -C html/image_src images
+	$(MAKE) -C html/image_src images
 	
 clean:
-	make -C html/image_src clean
+	$(MAKE) -C html/image_src clean
 	@rm -f postgis-out.xml postgis_aggs_mm.xml
 
 maintainer-clean: clean
-	make -C html/image_src clean
+	$(MAKE) -C html/image_src clean
 	@rm -f html/*.html \
 		postgis-${POSTGIS_MAJOR_VERSION}.${POSTGIS_MINOR_VERSION}.${POSTGIS_MICRO_VERSION}.pdf
 
 comments: postgis_comments.sql
 
 comments-install: comments
-	make -f Makefile.comments install
+	$(MAKE) -f Makefile.comments install
 
 comments-uninstall:
-	make -f Makefile.comments uninstall
+	$(MAKE) -f Makefile.comments uninstall
 
 install: html/postgis.html man/shp2pgsql.1 man/pgsql2shp.1
-	@mkdir -p $(PGSQL_DOCDIR)/postgis
-	@mkdir -p $(PGSQL_MANDIR)/man1
-	cp html/postgis.html $(PGSQL_DOCDIR)/postgis/postgis.html
-	cp ../README.postgis $(PGSQL_DOCDIR)/postgis/README.postgis
-	cp man/pgsql2shp.1 $(PGSQL_MANDIR)/man1/pgsql2shp.1
-	cp man/shp2pgsql.1 $(PGSQL_MANDIR)/man1/shp2pgsql.1
+	@mkdir -p $(DESTDIR)$(PGSQL_DOCDIR)/postgis
+	@mkdir -p $(DESTDIR)$(PGSQL_MANDIR)/man1
+	cp html/postgis.html $(DESTDIR)$(PGSQL_DOCDIR)/postgis/postgis.html
+	cp ../README.postgis $(DESTDIR)$(PGSQL_DOCDIR)/postgis/README.postgis
+	cp man/pgsql2shp.1 $(DESTDIR)$(PGSQL_MANDIR)/man1/pgsql2shp.1
+	cp man/shp2pgsql.1 $(DESTDIR)$(PGSQL_MANDIR)/man1/shp2pgsql.1
 
 uninstall:
-	rm -f $(PGSQL_DOCDIR)/postgis/postgis.html
-	rm -f $(PGSQL_DOCDIR)/postgis/README.postgis
-	rm -f $(PGSQL_MANDIR)/man1/shp2pgsql.1
-	rm -f $(PGSQL_MANDIR)/man1/pgsql2shp.1
+	rm -f $(DESTDIR)$(PGSQL_DOCDIR)/postgis/postgis.html
+	rm -f $(DESTDIR)$(PGSQL_DOCDIR)/postgis/README.postgis
+	rm -f $(DESTDIR)$(PGSQL_MANDIR)/man1/shp2pgsql.1
+	rm -f $(DESTDIR)$(PGSQL_MANDIR)/man1/pgsql2shp.1
 
 requirements_not_met_xsltproc:
 	@echo

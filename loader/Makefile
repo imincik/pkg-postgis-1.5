@@ -16,8 +16,8 @@
 # the INSTALL and DESTDIR variables so we can get the correct install paths. 
 # Hence we include the PGXS Makefile here, but ensure that we override the
 # 'all' and 'install' targets with the ones we really want to use below.
-PG_CONFIG = /usr/local/pgsql/9.1/bin/pg_config
-PGXS := /usr/local/pgsql/9.1/lib/pgxs/src/makefiles/pgxs.mk
+PG_CONFIG = /usr/local/pgsql/9.2/bin/pg_config
+PGXS := /usr/local/pgsql/9.2/lib/pgxs/src/makefiles/pgxs.mk
 include $(PGXS)
 
 # Set CFLAGS afer PGXS, otherwise it will get overwritten with the PGXS
@@ -31,8 +31,8 @@ SHP2PGSQL-CLI=shp2pgsql
 SHP2PGSQL-GUI=shp2pgsql-gui
 
 # PostgreSQL frontend CPPFLAGS and LDFLAGS (for compiling and linking with libpq)
-PGSQL_FE_CPPFLAGS=-I/usr/local/pgsql/9.1/include
-PGSQL_FE_LDFLAGS=-L/usr/local/pgsql/9.1/lib -lpq
+PGSQL_FE_CPPFLAGS=-I/usr/local/pgsql/9.2/include
+PGSQL_FE_LDFLAGS=-L/usr/local/pgsql/9.2/lib -lpq
 
 # iconv flags
 ICONV_LDFLAGS= -liconv

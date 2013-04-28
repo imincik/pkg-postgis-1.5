@@ -1,5 +1,5 @@
 /**********************************************************************
- * $Id: lwgeom_rtree.c 7140 2011-05-13 01:01:26Z chodgson $
+ * $Id: lwgeom_rtree.c 8887 2012-01-20 08:42:43Z strk $
  *
  * PostGIS - Spatial Types for PostgreSQL
  * http://postgis.refractions.net
@@ -9,6 +9,8 @@
  * the terms of the GNU General Public Licence. See the COPYING file.
  *
  **********************************************************************/
+
+#include <assert.h>
 
 #include "lwgeom_pg.h"
 #include "liblwgeom.h"
@@ -494,8 +496,7 @@ RTREE_POLY_CACHE *retrieveCache(LWGEOM *lwgeom, uchar *serializedPoly, RTREE_POL
 
 	LWDEBUGF(2, "retrieveCache called with %p %p %p", lwgeom, serializedPoly, currentCache);
 
-	/* Make sure this isn't someone else's cache object. */
-	if ( currentCache && currentCache->type != 1 ) currentCache = NULL;
+	assert ( ! currentCache || currentCache->type == 1 );
 
 	if (!currentCache)
 	{

@@ -1,5 +1,5 @@
 /**********************************************************************
- * $Id: shp2pgsql-core.c 6361 2010-12-13 20:42:47Z pramsey $
+ * $Id: shp2pgsql-core.c 9034 2012-02-05 00:35:21Z mcayland $
  *
  * PostGIS - Spatial Types for PostgreSQL
  * http://postgis.refractions.net
@@ -1257,7 +1257,7 @@ ShpLoaderOpenShape(SHPLOADERSTATE *state)
 
 		if (state->config->encoding)
 		{
-            static char *encoding_msg = "Try \"LATIN1\" (Western European), or one of the values described at http://www.postgresql.org/docs/current/static/multibyte.html.";
+            static char *encoding_msg = "Try \"LATIN1\" (Western European), or one of the values described at http://www.gnu.org/software/libiconv/.";
 
             int rv = utf8(state->config->encoding, name, &utf8str);
 						

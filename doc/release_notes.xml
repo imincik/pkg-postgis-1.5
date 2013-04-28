@@ -3,6 +3,87 @@
   <title>Appendix</title>
     <subtitle>Release Notes</subtitle>
       <sect1>
+        <title>Release 1.5.8</title>
+        <para>Release date: 2012/11/15</para>
+        <para>This is a bug fix release, addressing issues that have been filed since the 1.5.7 release.</para>
+        <simplesect>
+         <title>Bug Fixes</title>
+          <para>#2048, ST_Within and ST_CoveredBy producing bad results</para>
+          <para>#2095, proj4 cache corrupted by projection error</para>
+        </simplesect>
+      </sect1>
+      <sect1>
+        <title>Release 1.5.7</title>
+        <para>Release date: 2012/10/31</para>
+        <para>This is a bug fix release, addressing issues that have been filed since the 1.5.6 release.</para>
+        <simplesect>
+         <title>Bug Fixes</title>
+          <para>#2071, Add PgSQL 9.2 support</para>
+        </simplesect>
+      </sect1>
+      <sect1>
+        <title>Release 1.5.6</title>
+        <para>Release date: 2012/10/30</para>
+        <para>This is a bug fix release, addressing issues that have been filed since the 1.5.5 release.</para>
+        <simplesect>
+         <title>Bug Fixes</title>
+          <para>#547, ST_Contains memory problems, the remake</para>
+          <para>#1957, ST_Distance to a one-point LineString returns NULL</para>
+          <para>#1936, ST_GeomFromGML on CurvePolygon causes server crash</para>
+          <para>#1953, Segfault on GEOS calls with empty polygon</para>
+          <para>#1976, Geography point-in-ring code overhauled for more reliability</para>
+          <para>#2071, Add PgSQL 9.2 support</para>
+        </simplesect>
+      </sect1>
+      <sect1>
+        <title>Release 1.5.5</title>
+        <para>Release date: 2012/07/20</para>
+        <para>This is a bug fix release, addressing issues that have been filed since the 1.5.4 release.</para>
+        <simplesect>
+         <title>Bug Fixes</title>
+         <para>#1825, containsproperly fix in prepared geometry.</para>
+         <para>#1832, Crash when updating GIST index on geography column</para>
+         <para>#1865, don't strip comments COPY data from dumps on restore</para>
+        </simplesect>
+      </sect1>
+      <sect1>
+        <title>Release 1.5.4</title>
+        <para>Release date: 2012/05/06</para>
+        <para>This is a bug fix release, addressing issues that have been filed since the 1.5.3 release.</para>
+        <simplesect>
+         <title>Bug Fixes</title>
+         <para>#547, ST_Contains memory problems (Sandro Santilli)</para>
+         <para>#621, Problem finding intersections with geography (Paul Ramsey)</para>
+         <para>#627, PostGIS/PostgreSQL process die on invalid geometry (Paul Ramsey)</para>
+         <para>#810, Increase accuracy of area calculation (Paul Ramsey)</para>
+         <para>#852, improve spatial predicates robustness (Sandro Santilli, Nicklas Avén)</para>
+         <para>#877, ST_Estimated_Extent returns NULL on empty tables (Sandro Santilli)</para>
+         <para>#1028, ST_AsSVG kills whole postgres server when fails (Paul Ramsey)</para>
+         <para>#1056, Fix boxes of arcs and circle stroking code (Paul Ramsey)</para>
+         <para>#1121, populate_geometry_columns using deprecated functions (Regin Obe, Paul Ramsey)</para>
+         <para>#1135, improve testsuite predictability (Andreas 'ads' Scherbaum)</para>
+         <para>#1146, images generator crashes (bronaugh)</para>
+         <para>#1170, North Pole intersection fails (Paul Ramsey)</para>
+         <para>#1179, ST_AsText crash with bad value (kjurka)</para>
+         <para>#1184, honour DESTDIR in documentation Makefile (Bryce L Nordgren)</para>
+         <para>#1227, server crash on invalid GML </para>
+         <para>#1252, SRID appearing in WKT (Paul Ramsey)</para>
+         <para>#1264, st_dwithin(g, g, 0) doesn't work (Paul Ramsey)</para>
+         <para>#1344, allow exporting tables with invalid geometries (Sandro Santilli)</para>
+         <para>#1389, wrong proj4text for SRID 31300 and 31370 (Paul Ramsey)</para>
+         <para>#1406, shp2pgsql crashes when loading into geography (Sandro Santilli)</para>
+         <para>#1595, fixed SRID redundancy in ST_Line_SubString (Sandro Santilli)</para>
+         <para>#1596, check SRID in UpdateGeometrySRID (Mike Toews, Sandro Santilli)</para>
+         <para>#1602, fix ST_Polygonize to retain Z (Sandro Santilli)</para>
+         <para>#1697, fix crash with EMPTY entries in GiST index (Paul Ramsey)</para>
+         <para>#1772, fix ST_Line_Locate_Point with collapsed input (Sandro Santilli)</para>
+         <para>#1799, Protect ST_Segmentize from max_length=0  (Sandro Santilli)</para>
+         <para>Alter parameter order in 900913 (Paul Ramsey)</para>
+         <para>Support builds with "gmake" (Greg Troxel)</para>
+        </simplesect>
+      </sect1>
+      
+      <sect1>
         <title>Release 1.5.3</title>
         <para>Release date: 2011/06/25</para>
         <para>This is a bug fix release, addressing issues that have been filed since the 1.5.2 release.</para>

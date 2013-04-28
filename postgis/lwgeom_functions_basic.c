@@ -1,5 +1,5 @@
 /**********************************************************************
- * $Id: lwgeom_functions_basic.c 7092 2011-05-04 22:13:01Z chodgson $
+ * $Id: lwgeom_functions_basic.c 9711 2012-05-04 08:02:08Z strk $
  *
  * PostGIS - Spatial Types for PostgreSQL
  * http://postgis.refractions.net
@@ -127,9 +127,14 @@ Datum LWGEOM_summary(PG_FUNCTION_ARGS)
 
 	/* create a text obj to return */
 	mytext = (text *) lwalloc(VARHDRSZ  + strlen(result) + 1);
+#if 1 /* See http://trac.osgeo.org/postgis/ticket/648 */
 	SET_VARSIZE(mytext, VARHDRSZ + strlen(result) + 1);
 	VARDATA(mytext)[0] = '\n';
 	memcpy(VARDATA(mytext)+1, result, strlen(result) );
+#else
+	SET_VARSIZE(mytext, VARHDRSZ + strlen(result));
+	memcpy(VARDATA(mytext), result, strlen(result) );
+#endif
 
 	lwfree(result);
 	PG_FREE_IF_COPY(geom,0);
@@ -2740,6 +2745,13 @@ Datum LWGEOM_segmentize2d(PG_FUNCTION_ARGS)
 
 	ingeom = (PG_LWGEOM *)PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
 	dist = PG_GETARG_FLOAT8(1);
+
+	if ( dist <= 0 ) {
+		/* Protect from knowingly infinite loops, see #1799 */
+		/* Note that we'll end out of memory anyway for other small distances */
+		elog(ERROR, "ST_Segmentize: invalid max_distance %g (must be >= 0)", dist);
+		PG_RETURN_NULL();
+	}
 
 	/* Avoid deserialize/serialize steps */
 	if ( (TYPE_GETTYPE(ingeom->type) == POINTTYPE) ||

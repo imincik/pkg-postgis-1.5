@@ -1,5 +1,5 @@
 /**********************************************************************
- * $Id: lwalgorithm.c 5181 2010-02-01 17:35:55Z pramsey $
+ * $Id: lwalgorithm.c 8970 2012-01-30 20:52:28Z pramsey $
  *
  * PostGIS - Spatial Types for PostgreSQL
  * http://postgis.refractions.net
@@ -701,9 +701,12 @@ LWCOLLECTION *lwline_clip_to_ordinate_range(LWLINE *line, int ordinate, double f
 	lwfree(r);
 
 	if ( lwgeom_out->ngeoms > 0 )
-		return lwgeom_out;
+	{
+		lwgeom_drop_bbox((LWGEOM*)lwgeom_out);
+		lwgeom_add_bbox((LWGEOM*)lwgeom_out);
+	}
 
-	return NULL;
+	return lwgeom_out;
 
 }
 
